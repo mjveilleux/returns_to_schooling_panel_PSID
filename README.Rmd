@@ -1,0 +1,20 @@
+
+READ ME for EC821 Project File
+
+These are the files added in this folder.
+
+
+The R script for cleaning data
+emtrics_cleaner_MV.R
+
+
+Do file for State output
+emtrics_project.do
+
+
+Plots and Figures supplementary of the text:
+emtrics_project_plots.html
+
+
+Log  file for Stata output:
+log_emtrics_project.smcl

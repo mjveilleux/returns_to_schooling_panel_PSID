@@ -1,0 +1,960 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data/log_emtrics_project.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}20 Jan 2022, 11:41:40
+{txt}
+{com}. *set working directory
+. cd "/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"
+{res}/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data
+{txt}
+{com}. *input clean dataset from R
+. use "/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data/clean_81_90.dta", clear
+{txt}(Written by R.              )
+
+{com}.  
+.  
+. *************************************************\\\\************************************************* 
+.  
+.  
+. *add labels 
+. label variable yr_born "yearn born"
+{txt}
+{com}. label variable year "time"
+{txt}
+{com}. label variable mar "Marital Status, ref: Married"
+{txt}
+{com}. label variable comp_edu "education complete"
+{txt}
+{com}. label variable emp_1 "Employment Status in Last Survey, ref: Unemployed t-1"
+{txt}
+{com}. label variable hrs_ann "hours worked yearly"
+{txt}
+{com}. label variable income "yearly income"
+{txt}
+{com}. label variable sex "Sex, ref: Male"
+{txt}
+{com}. label variable age "Age"
+{txt}
+{com}. label variable exp "Experience"
+{txt}
+{com}. label variable wage "Wage"
+{txt}
+{com}. label variable lnwage "Log Wage"
+{txt}
+{com}. 
+. *create variables
+. gen exp2 = exp^2
+{txt}
+{com}. gen age2 = age^2
+{txt}
+{com}. 
+. *create for 1SLS
+. egen mean_emp_1 = mean(emp_1), by(id)
+{txt}
+{com}. generate demeaned_emp_1 = emp_1- mean_emp_1
+{txt}
+{com}. egen mean_mar = mean(mar), by(id)
+{txt}
+{com}. generate demeaned_mar = mar- mean_mar
+{txt}
+{com}. egen mean_exp = mean(exp), by(id)
+{txt}
+{com}. egen mean_exp2 = mean(exp2), by(id)
+{txt}
+{com}. egen mean_hrs_ann = mean(hrs_ann), by(id)
+{txt}
+{com}. 
+. 
+. 
+. *set as panel 
+. tset id year, yearly  delta(1 year)
+{res}
+{col 1}{txt:Panel variable: }{res:id}{txt: (strongly balanced)}
+{p 1 16 2}{txt:Time variable: }{res:year}{txt:, }{res:{bind:1981}}{txt: to }{res:{bind:1990}}{p_end}
+{txt}{col 10}Delta: {res}1 year
+{txt}
+{com}. 
+. 
+. *************************************************
+. 
+. *******         ESTIMATION              ************
+. 
+. *************************************************
+. 
+. *without controlling for time effects
+. 
+. reg lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, r
+
+{txt}Linear regression                               Number of obs     = {res}    15,910
+                                                {txt}F(11, 15898)      =  {res}   713.16
+                                                {txt}Prob > F          = {res}    0.0000
+                                                {txt}R-squared         = {res}    0.3406
+                                                {txt}Root MSE          =    {res} .45623
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}      lnwage{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}comp_edu85 {c |}{col 14}{res}{space 2} .1066772{col 26}{space 2} .0017618{col 37}{space 1}   60.55{col 46}{space 3}0.000{col 54}{space 4} .1032238{col 67}{space 3} .1101305
+{txt}{space 7}emp_1 {c |}{col 14}{res}{space 2} .2723576{col 26}{space 2} .0218495{col 37}{space 1}   12.47{col 46}{space 3}0.000{col 54}{space 4} .2295302{col 67}{space 3} .3151851
+{txt}{space 5}hrs_ann {c |}{col 14}{res}{space 2}-.0001677{col 26}{space 2} 8.70e-06{col 37}{space 1}  -19.27{col 46}{space 3}0.000{col 54}{space 4}-.0001847{col 67}{space 3}-.0001506
+{txt}{space 9}sex {c |}{col 14}{res}{space 2}  .299827{col 26}{space 2} .0141182{col 37}{space 1}   21.24{col 46}{space 3}0.000{col 54}{space 4} .2721537{col 67}{space 3} .3275004
+{txt}{space 9}mar {c |}{col 14}{res}{space 2}-.0878357{col 26}{space 2}  .012057{col 37}{space 1}   -7.29{col 46}{space 3}0.000{col 54}{space 4}-.1114687{col 67}{space 3}-.0642027
+{txt}{space 9}exp {c |}{col 14}{res}{space 2}  .054182{col 26}{space 2} .0026735{col 37}{space 1}   20.27{col 46}{space 3}0.000{col 54}{space 4} .0489417{col 67}{space 3} .0594222
+{txt}{space 8}exp2 {c |}{col 14}{res}{space 2}-.0008181{col 26}{space 2} .0000625{col 37}{space 1}  -13.09{col 46}{space 3}0.000{col 54}{space 4}-.0009406{col 67}{space 3}-.0006956
+{txt}{space 6}race85 {c |}{col 14}{res}{space 2}-.1150969{col 26}{space 2} .0070686{col 37}{space 1}  -16.28{col 46}{space 3}0.000{col 54}{space 4}-.1289523{col 67}{space 3}-.1012416
+{txt}{space 4}region85 {c |}{col 14}{res}{space 2} .0268508{col 26}{space 2} .0026549{col 37}{space 1}   10.11{col 46}{space 3}0.000{col 54}{space 4}  .021647{col 67}{space 3} .0320546
+{txt}{space 7}occ85 {c |}{col 14}{res}{space 2}-.0052877{col 26}{space 2} .0017677{col 37}{space 1}   -2.99{col 46}{space 3}0.003{col 54}{space 4}-.0087525{col 67}{space 3}-.0018229
+{txt}{space 1}union_cov85 {c |}{col 14}{res}{space 2} .1230222{col 26}{space 2} .0065975{col 37}{space 1}   18.65{col 46}{space 3}0.000{col 54}{space 4} .1100904{col 67}{space 3} .1359541
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2}-.4819774{col 26}{space 2} .0704091{col 37}{space 1}   -6.85{col 46}{space 3}0.000{col 54}{space 4}-.6199871{col 67}{space 3}-.3439676
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. outreg2 using results, replace tex dec(3) ctitle(OLS)
+{txt}{stata `"shellout using `"results.tex"'"':results.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "results.txt""':seeout}
+
+{com}. 
+. 
+. *Pooled OLS 
+. 
+. reg lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85 year, vce(r) 
+
+{txt}Linear regression                               Number of obs     = {res}    15,910
+                                                {txt}F(12, 15897)      =  {res}   750.82
+                                                {txt}Prob > F          = {res}    0.0000
+                                                {txt}R-squared         = {res}    0.3695
+                                                {txt}Root MSE          =    {res} .44615
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}      lnwage{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}comp_edu85 {c |}{col 14}{res}{space 2} .0990378{col 26}{space 2} .0017457{col 37}{space 1}   56.73{col 46}{space 3}0.000{col 54}{space 4} .0956161{col 67}{space 3} .1024595
+{txt}{space 7}emp_1 {c |}{col 14}{res}{space 2} .2621839{col 26}{space 2} .0216376{col 37}{space 1}   12.12{col 46}{space 3}0.000{col 54}{space 4} .2197718{col 67}{space 3}  .304596
+{txt}{space 5}hrs_ann {c |}{col 14}{res}{space 2}-.0001779{col 26}{space 2} 8.59e-06{col 37}{space 1}  -20.70{col 46}{space 3}0.000{col 54}{space 4}-.0001947{col 67}{space 3} -.000161
+{txt}{space 9}sex {c |}{col 14}{res}{space 2} .2931946{col 26}{space 2} .0136909{col 37}{space 1}   21.42{col 46}{space 3}0.000{col 54}{space 4} .2663589{col 67}{space 3} .3200304
+{txt}{space 9}mar {c |}{col 14}{res}{space 2}-.0926813{col 26}{space 2} .0117295{col 37}{space 1}   -7.90{col 46}{space 3}0.000{col 54}{space 4}-.1156724{col 67}{space 3}-.0696902
+{txt}{space 9}exp {c |}{col 14}{res}{space 2} .0375589{col 26}{space 2}  .002705{col 37}{space 1}   13.88{col 46}{space 3}0.000{col 54}{space 4} .0322567{col 67}{space 3}  .042861
+{txt}{space 8}exp2 {c |}{col 14}{res}{space 2}-.0005923{col 26}{space 2} .0000621{col 37}{space 1}   -9.54{col 46}{space 3}0.000{col 54}{space 4} -.000714{col 67}{space 3}-.0004706
+{txt}{space 6}race85 {c |}{col 14}{res}{space 2}-.1171994{col 26}{space 2} .0070429{col 37}{space 1}  -16.64{col 46}{space 3}0.000{col 54}{space 4}-.1310043{col 67}{space 3}-.1033944
+{txt}{space 4}region85 {c |}{col 14}{res}{space 2} .0268037{col 26}{space 2} .0025825{col 37}{space 1}   10.38{col 46}{space 3}0.000{col 54}{space 4} .0217417{col 67}{space 3} .0318657
+{txt}{space 7}occ85 {c |}{col 14}{res}{space 2}-.0063034{col 26}{space 2} .0017303{col 37}{space 1}   -3.64{col 46}{space 3}0.000{col 54}{space 4} -.009695{col 67}{space 3}-.0029117
+{txt}{space 1}union_cov85 {c |}{col 14}{res}{space 2} .1219384{col 26}{space 2} .0065282{col 37}{space 1}   18.68{col 46}{space 3}0.000{col 54}{space 4} .1091423{col 67}{space 3} .1347345
+{txt}{space 8}year {c |}{col 14}{res}{space 2} .0370926{col 26}{space 2} .0013933{col 37}{space 1}   26.62{col 46}{space 3}0.000{col 54}{space 4} .0343616{col 67}{space 3} .0398236
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2}  -73.729{col 26}{space 2} 2.750605{col 37}{space 1}  -26.80{col 46}{space 3}0.000{col 54}{space 4}-79.12049{col 67}{space 3} -68.3375
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. outreg2 using results, append tex dec(3) ctitle(Pooled OLS)
+{txt}{stata `"shellout using `"results.tex"'"':results.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "results.txt""':seeout}
+
+{com}. 
+. 
+. 
+. *Random Effects
+. 
+.  xtreg lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, re vce(r) theta
+{res}
+{txt}Random-effects GLS regression                   Number of obs     = {res}    15,910
+{txt}Group variable: {res}id                              {txt}Number of groups  = {res}     1,591
+
+{txt}R-squared:                                      Obs per group:
+     Within  = {res}0.3024                                         {txt}min = {res}        10
+{txt}     Between = {res}0.3156                                         {txt}avg = {res}      10.0
+{txt}     Overall = {res}0.3013                                         {txt}max = {res}        10
+
+                                                {txt}Wald chi2({res}11{txt})     =  {res}  3514.27
+{txt}corr(u_i, X) = {res}0{txt} (assumed)                      Prob > chi2       =     {res}0.0000
+{txt}theta        = {res}.76645476
+
+{txt}{ralign 78:(Std. err. adjusted for {res:1,591} clusters in {res:id})}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}      lnwage{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      z{col 46}   P>|z|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}comp_edu85 {c |}{col 14}{res}{space 2} .1342546{col 26}{space 2} .0047186{col 37}{space 1}   28.45{col 46}{space 3}0.000{col 54}{space 4} .1250062{col 67}{space 3} .1435029
+{txt}{space 7}emp_1 {c |}{col 14}{res}{space 2} .1159552{col 26}{space 2} .0162581{col 37}{space 1}    7.13{col 46}{space 3}0.000{col 54}{space 4}   .08409{col 67}{space 3} .1478204
+{txt}{space 5}hrs_ann {c |}{col 14}{res}{space 2}-.0002176{col 26}{space 2} .0000101{col 37}{space 1}  -21.46{col 46}{space 3}0.000{col 54}{space 4}-.0002375{col 67}{space 3}-.0001977
+{txt}{space 9}sex {c |}{col 14}{res}{space 2} .3846698{col 26}{space 2} .0317241{col 37}{space 1}   12.13{col 46}{space 3}0.000{col 54}{space 4} .3224918{col 67}{space 3} .4468478
+{txt}{space 9}mar {c |}{col 14}{res}{space 2}-.0270761{col 26}{space 2} .0135568{col 37}{space 1}   -2.00{col 46}{space 3}0.046{col 54}{space 4}-.0536469{col 67}{space 3}-.0005052
+{txt}{space 9}exp {c |}{col 14}{res}{space 2} .0856675{col 26}{space 2} .0035833{col 37}{space 1}   23.91{col 46}{space 3}0.000{col 54}{space 4} .0786443{col 67}{space 3} .0926907
+{txt}{space 8}exp2 {c |}{col 14}{res}{space 2}-.0010244{col 26}{space 2} .0000848{col 37}{space 1}  -12.08{col 46}{space 3}0.000{col 54}{space 4}-.0011906{col 67}{space 3}-.0008582
+{txt}{space 6}race85 {c |}{col 14}{res}{space 2}-.1147885{col 26}{space 2} .0194664{col 37}{space 1}   -5.90{col 46}{space 3}0.000{col 54}{space 4} -.152942{col 67}{space 3} -.076635
+{txt}{space 4}region85 {c |}{col 14}{res}{space 2} .0246278{col 26}{space 2} .0074872{col 37}{space 1}    3.29{col 46}{space 3}0.001{col 54}{space 4} .0099533{col 67}{space 3} .0393024
+{txt}{space 7}occ85 {c |}{col 14}{res}{space 2}-.0014436{col 26}{space 2} .0049727{col 37}{space 1}   -0.29{col 46}{space 3}0.772{col 54}{space 4}-.0111899{col 67}{space 3} .0083027
+{txt}{space 1}union_cov85 {c |}{col 14}{res}{space 2} .1218773{col 26}{space 2} .0172123{col 37}{space 1}    7.08{col 46}{space 3}0.000{col 54}{space 4} .0881418{col 67}{space 3} .1556128
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2}-1.205175{col 26}{space 2} .1202211{col 37}{space 1}  -10.02{col 46}{space 3}0.000{col 54}{space 4}-1.440804{col 67}{space 3}-.9695462
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+     sigma_u {c |} {res} .35198015
+     {txt}sigma_e {c |} {res} .26734273
+         {txt}rho {c |} {res} .63415568{txt}   (fraction of variance due to u_i)
+{hline 13}{c BT}{hline 64}
+
+{com}.  outreg2 using results, append tex dec(3) ctitle(RE)
+{txt}{stata `"shellout using `"results.tex"'"':results.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "results.txt""':seeout}
+
+{com}. 
+.  
+.  
+.  *Fixed Effects
+.  xtreg lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, fe vce(r)
+{txt}{p 0 6 2}note: {bf:comp_edu85} omitted because of collinearity.{p_end}
+{p 0 6 2}note: {bf:sex} omitted because of collinearity.{p_end}
+{p 0 6 2}note: {bf:race85} omitted because of collinearity.{p_end}
+{p 0 6 2}note: {bf:region85} omitted because of collinearity.{p_end}
+{p 0 6 2}note: {bf:occ85} omitted because of collinearity.{p_end}
+{p 0 6 2}note: {bf:union_cov85} omitted because of collinearity.{p_end}
+{res}
+{txt}Fixed-effects (within) regression{col 49}Number of obs{col 67}={col 69}{res}    15,910
+{txt}Group variable: {res}id{txt}{col 49}Number of groups{col 67}={col 69}{res}     1,591
+
+{txt}R-squared:{col 49}Obs per group:
+     Within  = {res}0.3039{col 63}{txt}min{col 67}={col 69}{res}        10
+{txt}     Between = {res}0.0029{col 63}{txt}avg{col 67}={col 69}{res}      10.0
+{txt}     Overall = {res}0.0088{col 63}{txt}max{col 67}={col 69}{res}        10
+
+{txt}{col 49}F({res}5{txt},{res}1590{txt}){col 67}={col 70}{res}   523.62
+{txt}corr(u_i, Xb) = {res}-0.5410{txt}{col 49}Prob > F{col 67}={col 73}{res}0.0000
+
+{txt}{ralign 78:(Std. err. adjusted for {res:1,591} clusters in {res:id})}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}      lnwage{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}comp_edu85 {c |}{col 14}{res}{space 2}        0{col 26}{txt}  (omitted)
+{space 7}emp_1 {c |}{col 14}{res}{space 2} .1022983{col 26}{space 2} .0164066{col 37}{space 1}    6.24{col 46}{space 3}0.000{col 54}{space 4} .0701175{col 67}{space 3} .1344791
+{txt}{space 5}hrs_ann {c |}{col 14}{res}{space 2}-.0002265{col 26}{space 2} .0000105{col 37}{space 1}  -21.65{col 46}{space 3}0.000{col 54}{space 4} -.000247{col 67}{space 3} -.000206
+{txt}{space 9}sex {c |}{col 14}{res}{space 2}        0{col 26}{txt}  (omitted)
+{space 9}mar {c |}{col 14}{res}{space 2}-.0201139{col 26}{space 2} .0141348{col 37}{space 1}   -1.42{col 46}{space 3}0.155{col 54}{space 4}-.0478388{col 67}{space 3} .0076109
+{txt}{space 9}exp {c |}{col 14}{res}{space 2} .0898579{col 26}{space 2} .0037895{col 37}{space 1}   23.71{col 46}{space 3}0.000{col 54}{space 4} .0824251{col 67}{space 3} .0972908
+{txt}{space 8}exp2 {c |}{col 14}{res}{space 2}-.0009521{col 26}{space 2} .0000902{col 37}{space 1}  -10.55{col 46}{space 3}0.000{col 54}{space 4}-.0011291{col 67}{space 3}-.0007751
+{txt}{space 6}race85 {c |}{col 14}{res}{space 2}        0{col 26}{txt}  (omitted)
+{space 4}region85 {c |}{col 14}{res}{space 2}        0{col 26}{txt}  (omitted)
+{space 7}occ85 {c |}{col 14}{res}{space 2}        0{col 26}{txt}  (omitted)
+{space 1}union_cov85 {c |}{col 14}{res}{space 2}        0{col 26}{txt}  (omitted)
+{space 7}_cons {c |}{col 14}{res}{space 2} 1.359429{col 26}{space 2} .0543972{col 37}{space 1}   24.99{col 46}{space 3}0.000{col 54}{space 4} 1.252731{col 67}{space 3} 1.466127
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+     sigma_u {c |} {res} .59274375
+     {txt}sigma_e {c |} {res} .26734273
+         {txt}rho {c |} {res} .83096212{txt}   (fraction of variance due to u_i)
+{hline 13}{c BT}{hline 64}
+
+{com}. outreg2 using results, append tex dec(3) ctitle(FE)
+{txt}{stata `"shellout using `"results.tex"'"':results.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "results.txt""':seeout}
+
+{com}. 
+.  
+.  
+. *Hausman Taylor estimation
+. xthtaylor lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, endog(comp_edu85 hrs_ann mar occ85) vce(r)
+
+{txt}Hausman–Taylor estimation{col 49}Number of obs{col 67}={col 69}{res}    15,910
+{txt}Group variable: {res}id{txt}{col 49}Number of groups{col 67}={col 69}{res}     1,591
+
+{txt}{col 49}Obs per group:
+{col 63}min{col 67}={col 69}{res}        10
+{txt}{col 63}avg{col 67}={col 69}{res}        10
+{txt}{col 63}max{col 67}={col 69}{res}        10
+
+{txt}Random effects u_i ~ {res}i.i.d.{txt}{col 49}Wald chi2({res}11{txt}){col 67}={col 69}{res}   3933.41
+{col 49}{txt}Prob > chi2{col 67}={res}{col 73}0.0000
+
+{txt}{ralign 78:(Std. err. adjusted for {res}1,591{txt} clusters in {res}id{txt})}
+{hline 13}{c TT}{hline 64}
+{res}{col 14}{text}{c |}{col 26}    Robust
+{res}      {txt}lnwage {c |}{col 16}Coefficient{col 29}std. err.{col 44}z{col 49}P>|z|{col 59}[95% conf. interval]
+{hline 13}{c +}{hline 64}
+{res}TVexogenous{txt}{col 14}{c |}
+       emp_1 {c |}{res}{col 17} .1023596{col 28} .0164169{col 39}   6.24{col 49}0.000{col 58}  .070183{col 70} .1345361
+         {txt}exp {c |}{res}{col 17}  .089844{col 28} .0037888{col 39}  23.71{col 49}0.000{col 58}  .082418{col 70}   .09727
+        {txt}exp2 {c |}{res}{col 17}-.0009517{col 28} .0000902{col 39} -10.55{col 49}0.000{col 58}-.0011284{col 70}-.0007749
+TVendogenous{txt}{col 14}{c |}
+     hrs_ann {c |}{res}{col 17}-.0002265{col 28} .0000105{col 39} -21.64{col 49}0.000{col 58} -.000247{col 70} -.000206
+         {txt}mar {c |}{res}{col 17}-.0201234{col 28} .0141379{col 39}  -1.42{col 49}0.155{col 58}-.0478331{col 70} .0075864
+TIexogenous{txt}{col 14}{c |}
+         sex {c |}{res}{col 17}-.3466268{col 28} .9198946{col 39}  -0.38{col 49}0.706{col 58}-2.149587{col 70} 1.456333
+      {txt}race85 {c |}{res}{col 17} .0138005{col 28} .1466998{col 39}   0.09{col 49}0.925{col 58}-.2737258{col 70} .3013269
+    {txt}region85 {c |}{res}{col 17}-.0464962{col 28} .0623899{col 39}  -0.75{col 49}0.456{col 58}-.1687781{col 70} .0757857
+ {txt}union_cov85 {c |}{res}{col 17}  .160817{col 28}  .129776{col 39}   1.24{col 49}0.215{col 58}-.0935394{col 70} .4151734
+TIendogenous{txt}{col 14}{c |}
+  comp_edu85 {c |}{res}{col 17} .2968609{col 28} .0798033{col 39}   3.72{col 49}0.000{col 58} .1404494{col 70} .4532725
+       {txt}occ85 {c |}{res}{col 17}  1.30578{col 28} 1.579038{col 39}   0.83{col 49}0.408{col 58}-1.789077{col 70} 4.400637
+{txt}{col 14}{c |}
+       _cons {c |}{res}{col 17}  -7.6992{col 28} 4.429133{col 39}  -1.74{col 49}0.082{col 58}-16.38014{col 70} .9817416
+{txt}{hline 13}{c +}{hline 64}
+     sigma_u {c |} {res} 3.1704033
+{txt}     sigma_e {c |} {res} .26729605
+{txt}         rho {c |} {res} .99294203{txt}   (fraction of variance due to u_i)
+{hline 13}{c BT}{hline 64}
+Note: {res}TV{txt} refers to time varying; {res}TI{txt} refers to time invariant.
+{res}{txt}
+{com}. outreg2 using results, append tex dec(3) ctitle(HT)
+{txt}{stata `"shellout using `"results.tex"'"':results.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "results.txt""':seeout}
+
+{com}. predict ind_effect_error_ht, u
+{txt}
+{com}. predict idiosync_effect_error_ht, e
+{txt}
+{com}. 
+. 
+. 
+. *When education is time variant (includes both negative and positive increases)
+. xthtaylor lnwage comp_edu emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, endog(comp_edu hrs_ann mar occ85) vce(r)
+
+{txt}Hausman–Taylor estimation{col 49}Number of obs{col 67}={col 69}{res}    15,910
+{txt}Group variable: {res}id{txt}{col 49}Number of groups{col 67}={col 69}{res}     1,591
+
+{txt}{col 49}Obs per group:
+{col 63}min{col 67}={col 69}{res}        10
+{txt}{col 63}avg{col 67}={col 69}{res}        10
+{txt}{col 63}max{col 67}={col 69}{res}        10
+
+{txt}Random effects u_i ~ {res}i.i.d.{txt}{col 49}Wald chi2({res}11{txt}){col 67}={col 69}{res}   3002.59
+{col 49}{txt}Prob > chi2{col 67}={res}{col 73}0.0000
+
+{txt}{ralign 78:(Std. err. adjusted for {res}1,591{txt} clusters in {res}id{txt})}
+{hline 13}{c TT}{hline 64}
+{res}{col 14}{text}{c |}{col 26}    Robust
+{res}      {txt}lnwage {c |}{col 16}Coefficient{col 29}std. err.{col 44}z{col 49}P>|z|{col 59}[95% conf. interval]
+{hline 13}{c +}{hline 64}
+{res}TVexogenous{txt}{col 14}{c |}
+       emp_1 {c |}{res}{col 17} .0988007{col 28} .0161423{col 39}   6.12{col 49}0.000{col 58} .0671623{col 70}  .130439
+         {txt}exp {c |}{res}{col 17} .0856404{col 28} .0037568{col 39}  22.80{col 49}0.000{col 58} .0782772{col 70} .0930035
+        {txt}exp2 {c |}{res}{col 17}-.0008822{col 28} .0000902{col 39}  -9.79{col 49}0.000{col 58}-.0010589{col 70}-.0007055
+TVendogenous{txt}{col 14}{c |}
+    comp_edu {c |}{res}{col 17} .0671568{col 28} .0058936{col 39}  11.39{col 49}0.000{col 58} .0556056{col 70}  .078708
+     {txt}hrs_ann {c |}{res}{col 17}-.0002304{col 28} .0000103{col 39} -22.28{col 49}0.000{col 58}-.0002507{col 70}-.0002101
+         {txt}mar {c |}{res}{col 17}-.0215785{col 28} .0139017{col 39}  -1.55{col 49}0.121{col 58}-.0488253{col 70} .0056683
+TIexogenous{txt}{col 14}{c |}
+         sex {c |}{res}{col 17}-1.474706{col 28} 2.009383{col 39}  -0.73{col 49}0.463{col 58}-5.413025{col 70} 2.463613
+      {txt}race85 {c |}{res}{col 17}-.1771872{col 28} .3047286{col 39}  -0.58{col 49}0.561{col 58}-.7744442{col 70} .4200698
+    {txt}region85 {c |}{res}{col 17}-.0480489{col 28} .1546364{col 39}  -0.31{col 49}0.756{col 58}-.3511306{col 70} .2550329
+ {txt}union_cov85 {c |}{res}{col 17} .0337006{col 28} .3030592{col 39}   0.11{col 49}0.911{col 58}-.5602846{col 70} .6276858
+TIendogenous{txt}{col 14}{c |}
+       occ85 {c |}{res}{col 17} 3.272348{col 28} 3.422627{col 39}   0.96{col 49}0.339{col 58}-3.435877{col 70} 9.980573
+{txt}{col 14}{c |}
+       _cons {c |}{res}{col 17}-10.25833{col 28} 10.57443{col 39}  -0.97{col 49}0.332{col 58}-30.98383{col 70} 10.46717
+{txt}{hline 13}{c +}{hline 64}
+     sigma_u {c |} {res} 8.9653566
+{txt}     sigma_e {c |} {res} .26435226
+{txt}         rho {c |} {res} .99913133{txt}   (fraction of variance due to u_i)
+{hline 13}{c BT}{hline 64}
+Note: {res}TV{txt} refers to time varying; {res}TI{txt} refers to time invariant.
+{res}{txt}
+{com}. outreg2 using results, append tex dec(3) ctitle(HT Education TV) addnote("standard errors HC1 robust")
+{res}warning: addnote ignored in appended columns
+{txt}{stata `"shellout using `"results.tex"'"':results.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "results.txt""':seeout}
+
+{com}. 
+. 
+. *AM estimation
+. xthtaylor lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, endog(comp_edu85 hrs_ann mar occ85) vce(r) am
+
+{txt}Amemiya–MaCurdy estimation{col 49}Number of obs{col 67}={col 69}{res}    15,910
+{txt}Group variable: {res}id{txt}{col 49}Number of groups{col 67}={col 69}{res}     1,591
+
+{txt}Time variable: {res}year{txt}{col 49}Obs per group:
+{col 63}min{col 67}={col 69}{res}        10
+{txt}{col 63}avg{col 67}={col 69}{res}        10
+{txt}{col 63}max{col 67}={col 69}{res}        10
+
+{txt}Random effects u_i ~ {res}i.i.d.{txt}{col 49}Wald chi2({res}11{txt}){col 67}={col 69}{res}  15169.09
+{col 49}{txt}Prob > chi2{col 67}={res}{col 73}0.0000
+
+{txt}{ralign 78:(Std. err. adjusted for {res}1,591{txt} clusters in {res}id{txt})}
+{hline 13}{c TT}{hline 64}
+{res}{col 14}{text}{c |}{col 26}    Robust
+{res}      {txt}lnwage {c |}{col 16}Coefficient{col 29}std. err.{col 44}z{col 49}P>|z|{col 59}[95% conf. interval]
+{hline 13}{c +}{hline 64}
+{res}TVexogenous{txt}{col 14}{c |}
+       emp_1 {c |}{res}{col 17} .1024208{col 28} .0164098{col 39}   6.24{col 49}0.000{col 58} .0702581{col 70} .1345834
+         {txt}exp {c |}{res}{col 17} .0898114{col 28}  .003786{col 39}  23.72{col 49}0.000{col 58} .0823911{col 70} .0972318
+        {txt}exp2 {c |}{res}{col 17}-.0009524{col 28} .0000901{col 39} -10.57{col 49}0.000{col 58} -.001129{col 70}-.0007758
+TVendogenous{txt}{col 14}{c |}
+     hrs_ann {c |}{res}{col 17}-.0002264{col 28} .0000105{col 39} -21.64{col 49}0.000{col 58}-.0002469{col 70}-.0002059
+         {txt}mar {c |}{res}{col 17}-.0201286{col 28}  .014138{col 39}  -1.42{col 49}0.155{col 58}-.0478385{col 70} .0075813
+TIexogenous{txt}{col 14}{c |}
+         sex {c |}{res}{col 17} .1936073{col 28} .0876913{col 39}   2.21{col 49}0.027{col 58} .0217355{col 70} .3654792
+      {txt}race85 {c |}{res}{col 17} -.046159{col 28} .0456087{col 39}  -1.01{col 49}0.312{col 58}-.1355504{col 70} .0432324
+    {txt}region85 {c |}{res}{col 17}-.0041951{col 28} .0170551{col 39}  -0.25{col 49}0.806{col 58}-.0376225{col 70} .0292323
+ {txt}union_cov85 {c |}{res}{col 17} .1483006{col 28} .0395648{col 39}   3.75{col 49}0.000{col 58} .0707551{col 70} .2258461
+TIendogenous{txt}{col 14}{c |}
+  comp_edu85 {c |}{res}{col 17} .2241548{col 28} .0188564{col 39}  11.89{col 49}0.000{col 58}  .187197{col 70} .2611126
+       {txt}occ85 {c |}{res}{col 17} .3613941{col 28} .1211222{col 39}   2.98{col 49}0.003{col 58} .1239989{col 70} .5987893
+{txt}{col 14}{c |}
+       _cons {c |}{res}{col 17}-3.735287{col 28} .5950455{col 39}  -6.28{col 49}0.000{col 58}-4.901554{col 70}-2.569019
+{txt}{hline 13}{c +}{hline 64}
+     sigma_u {c |} {res} 3.1704033
+{txt}     sigma_e {c |} {res} .26729605
+{txt}         rho {c |} {res} .99294203{txt}   (fraction of variance due to u_i)
+{hline 13}{c BT}{hline 64}
+Note: {res}TV{txt} refers to time varying; {res}TI{txt} refers to time invariant.
+{res}{txt}
+{com}. outreg2 using results, append tex dec(3) ctitle(AM) addnote("standard errors HC1 robust")
+{res}warning: addnote ignored in appended columns
+{txt}{stata `"shellout using `"results.tex"'"':results.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "results.txt""':seeout}
+
+{com}. predict ind_effect_error_am, u
+{txt}
+{com}. predict idiosync_effect_error_am, e
+{txt}
+{com}. 
+. 
+. *************************************************
+. 
+. *******         Robustness checks               ************
+. 
+. *************************************************
+. 
+. 
+. *******Hausman test ********
+. 
+. 
+. 
+. 
+. *Random Effects
+.  quietly xtreg lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, re theta
+{txt}
+{com}. estimates store reffects
+{txt}
+{com}. 
+.  *Fixed Effects
+.  quietly xtreg lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, fe
+{txt}
+{com}. estimates store feffects
+{txt}
+{com}. 
+. hausman feffects reffects
+
+{txt}{col 18}{hline 4} Coefficients {hline 4}
+{col 14}{c |}{col 21}(b){col 34}(B){col 49}(b-B){col 59}sqrt(diag(V_b-V_B))
+{col 14}{c |}{col 17}  feffects  {col 30}  reffects  {col 46}Difference{col 63}Std. err.
+{hline 13}{c +}{hline 64}
+{space 7}emp_1 {c |}{res}{col 18} .1022983{col 31} .1159552{col 47}-.0136569{col 63}        .
+{txt}{space 5}hrs_ann {c |}{res}{col 18}-.0002265{col 31}-.0002176{col 47}-8.86e-06{col 63} 6.22e-07
+{txt}{space 9}mar {c |}{res}{col 18}-.0201139{col 31}-.0270761{col 47} .0069621{col 63} .0019907
+{txt}{space 9}exp {c |}{res}{col 18} .0898579{col 31} .0856675{col 47} .0041904{col 63} .0005277
+{txt}{space 8}exp2 {c |}{res}{col 18}-.0009521{col 31}-.0010244{col 47} .0000723{col 63} .0000145
+{txt}{hline 13}{c BT}{hline 64}
+{ralign 78:b = Consistent under H0 and Ha; obtained from {bf:xtreg}.}
+{ralign 78:B = Inconsistent under Ha, efficient under H0; obtained from {bf:xtreg}.}
+
+Test of H0: Difference in coefficients not systematic
+
+{ralign 11:chi2({res:5})} = (b-B)'[(V_b-V_B)^(-1)](b-B)
+{ralign 11:} = {res:{ralign 6:568.86}}
+{ralign 11:Prob > chi2} = {res:{ralign 6:0.0000}}
+(V_b-V_B is not positive definite)
+
+{com}. 
+. 
+. **************First stage OLS to find validity of HT81 *************************
+.  
+. *1SLS for X2 
+. 
+. *employment status
+. quietly reg lnwage demeaned_emp_1 i.year
+{txt}
+{com}. outreg2 using first_stage, replace tex dec(3) ctitle(Employment)  addstat("F-Stat",e(F),"Prob > F",e(p),"Degree of Freedom",e(df_r)) sideway
+{txt}{stata `"shellout using `"first_stage.tex"'"':first_stage.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "first_stage.txt""':seeout}
+
+{com}. 
+. 
+. *marriage status
+. quietly reg lnwage demeaned_mar i.year
+{txt}
+{com}. outreg2 using first_stage, append tex dec(3) ctitle(Single) addstat("F-Stat",e(F),"Prob > F",e(p),"Degree of Freedom",e(df_r)) sideway
+{txt}{stata `"shellout using `"first_stage.tex"'"':first_stage.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "first_stage.txt""':seeout}
+
+{com}. 
+. 
+. 
+. *1SLS for Z2, regress school on all mean values of X1
+. 
+. quietly reg lnwage mean_exp mean_exp2 mean_hrs_ann i.year
+{txt}
+{com}. outreg2 using first_stage, append tex dec(3) ctitle(Education) addstat("F-Stat",e(F),"Prob > F",e(p),"Degree of Freedom",e(df_r)) sideway
+{txt}{stata `"shellout using `"first_stage.tex"'"':first_stage.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "first_stage.txt""':seeout}
+
+{com}. 
+. 
+. 
+. *****Check if overidentified******
+. 
+. 
+. *Random Effects
+. quietly xtreg lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, re vce(r) theta
+{txt}
+{com}. xtoverid, r
+
+{txt}Test of overidentifying restrictions: fixed vs random effects
+Cross-section time-series model: xtreg re  robust cluster(id)
+Sargan-Hansen statistic{res}{col 25}376.758{txt}  Chi-sq({res}5{txt}){col 47}P-value = {res}0.0000
+{txt}
+{com}. outreg2 using overid_check, replace tex dec(3) ctitle(RE)  addstat(`r(j)',`r(jp)')
+{txt}{stata `"shellout using `"overid_check.tex"'"':overid_check.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "overid_check.txt""':seeout}
+
+{com}. 
+. 
+. *Hausman Taylor estimation
+. quietly xthtaylor lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, endog(comp_edu85 hrs_ann mar occ85) vce(r)
+{txt}
+{com}. xtoverid, r
+
+{txt}Test of overidentifying restrictions: 
+Cross-section time-series model: xthtaylor htaylor  robust cluster(id)
+Sargan-Hansen statistic{res}{col 25}  0.249{txt}  Chi-sq({res}1{txt}){col 47}P-value = {res}0.6177
+{txt}
+{com}. outreg2 using overid_check, append tex dec(3) ctitle(HT) addstat(`r(j)',`r(jp)')
+{txt}{stata `"shellout using `"overid_check.tex"'"':overid_check.tex}
+{browse `"/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data"' :dir}{com} : {txt}{stata `"seeout using "overid_check.txt""':seeout}
+
+{com}. 
+. 
+. *AM estimation
+. quietly xthtaylor lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, endog(comp_edu85 hrs_ann mar occ85) vce(r) am
+{txt}
+{com}. *xtoverid, r noi
+. *outreg2 using overid_check, append tex dec(3) ctitle(AM) addstat(`r(j)',`r(jp)')
+. 
+. 
+. 
+. 
+. ****Are you BLUE? *****
+. 
+. *HT81 model
+. quietly xthtaylor lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, endog(comp_edu85 hrs_ann mar occ85) vce(r)
+{txt}
+{com}. 
+. 
+. *test if paramenters are linear
+.         test (exp exp2 hrs_ann mar sex race85 region85 union_cov85 comp_edu85 occ85)
+
+{p 0 7}{space 1}{text:( 1)}{space 1} {res}exp = 0{p_end}
+{p 0 7}{space 1}{text:( 2)}{space 1} exp2 = 0{p_end}
+{p 0 7}{space 1}{text:( 3)}{space 1} hrs_ann = 0{p_end}
+{p 0 7}{space 1}{text:( 4)}{space 1} mar = 0{p_end}
+{p 0 7}{space 1}{text:( 5)}{space 1} sex = 0{p_end}
+{p 0 7}{space 1}{text:( 6)}{space 1} race85 = 0{p_end}
+{p 0 7}{space 1}{text:( 7)}{space 1} region85 = 0{p_end}
+{p 0 7}{space 1}{text:( 8)}{space 1} union_cov85 = 0{p_end}
+{p 0 7}{space 1}{text:( 9)}{space 1} comp_edu85 = 0{p_end}
+{p 0 7}{space 1}{text:(10)}{space 1} occ85 = 0{p_end}
+
+{txt}{col 12}chi2( 10) ={res} 2417.81
+{txt}{col 10}Prob > chi2 =  {res}  0.0000
+{txt}
+{com}.         *correlations for all variables with both idiosyncratic and individual effects error terms
+.         
+. *also check for Perfect Collinearity (mar~sex). (comp_edu85 ~ race, exp, exp2)
+.         cor ind_effect_error_ht idiosync_effect_error_ht lnwage comp_edu85 hrs_ann exp exp2 race85 occ85 union_cov85 region85 mar sex
+{txt}(obs=15,910)
+
+             {c |} ind_ef~t idiosy~t   lnwage comp_~85  hrs_ann      exp     exp2   race85    occ85 union~85 region85      mar      sex
+{hline 13}{c +}{hline 117}
+ind_effect~t {c |}{res}   1.0000
+{txt}idiosync_e~t {c |}{res}   0.0078   1.0000
+      {txt}lnwage {c |}{res}   0.0920   0.4522   1.0000
+  {txt}comp_edu85 {c |}{res}  -0.0491  -0.0004   0.3936   1.0000
+     {txt}hrs_ann {c |}{res}  -0.0133  -0.0001  -0.0852   0.0661   1.0000
+         {txt}exp {c |}{res}   0.0023  -0.0000   0.0351  -0.4057  -0.0221   1.0000
+        {txt}exp2 {c |}{res}   0.0031  -0.0000   0.0076  -0.4147  -0.0294   0.9807   1.0000
+      {txt}race85 {c |}{res}   0.0000   0.0000  -0.2275  -0.2301  -0.1008   0.0770   0.0752   1.0000
+       {txt}occ85 {c |}{res}  -0.9743  -0.0076  -0.0334  -0.0687   0.0396  -0.0219  -0.0198  -0.0182   1.0000
+ {txt}union_cov85 {c |}{res}  -0.0000   0.0000   0.1111  -0.1125  -0.1216   0.0348   0.0304   0.0780   0.0063   1.0000
+    {txt}region85 {c |}{res}   0.0000  -0.0000   0.1789   0.1763  -0.0257  -0.0612  -0.0598  -0.2385   0.0221   0.0340   1.0000
+         {txt}mar {c |}{res}   0.0005   0.0000  -0.1943   0.0030  -0.1555   0.0218   0.0351   0.1348  -0.0781  -0.0079  -0.0300   1.0000
+         {txt}sex {c |}{res}   0.0000   0.0000   0.2315   0.0311   0.2066  -0.0718  -0.0772  -0.1395   0.1032   0.0052   0.0336  -0.6590   1.0000
+
+{txt}
+{com}.         *strong indiv_effects relationship with occupation
+.         scatter occ85 ind_effect_error_ht, name(occ_ind1) title(Occupation ~ Individ. Effects)
+{res}{txt}
+{com}. 
+. 
+. *are error termsn expected value 0? (yes)
+.         mean(ind_effect_error_ht)
+{res}
+{txt}{col 1}Mean estimation{col 48}{lalign 13:Number of obs}{col 61} = {res}{ralign 6:15,910}
+
+{txt}{hline 20}{c TT}{hline 11}{hline 11}{hline 14}{hline 12}
+{col 21}{c |}       Mean{col 33}   Std. err.{col 45}     [95% con{col 58}f. interval]
+{hline 20}{c +}{hline 11}{hline 11}{hline 14}{hline 12}
+ind_effect_error_ht {c |}{col 21}{res}{space 2}-2.24e-10{col 33}{space 2} .0219532{col 44}{space 5}-.0430308{col 58}{space 3} .0430308
+{txt}{hline 20}{c BT}{hline 11}{hline 11}{hline 14}{hline 12}
+
+{com}.         mean(idiosync_effect_error_ht)
+{res}
+{txt}{col 1}Mean estimation{col 53}{lalign 13:Number of obs}{col 66} = {res}{ralign 6:15,910}
+
+{txt}{hline 25}{c TT}{hline 11}{hline 11}{hline 14}{hline 12}
+{col 26}{c |}       Mean{col 38}   Std. err.{col 50}     [95% con{col 63}f. interval]
+{hline 25}{c +}{hline 11}{hline 11}{hline 14}{hline 12}
+idiosync_effect_error_ht {c |}{col 26}{res}{space 2}-3.77e-11{col 38}{space 2} .0020105{col 49}{space 5}-.0039408{col 63}{space 3} .0039408
+{txt}{hline 25}{c BT}{hline 11}{hline 11}{hline 14}{hline 12}
+
+{com}. 
+. *Reset test
+. quietly xthtaylor lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, endog(comp_edu85 hrs_ann mar occ85) vce(r)
+{txt}
+{com}.         predict yhat
+{txt}(option {bf:xb} assumed; fitted values)
+
+{com}.         g yhat2=yhat^2
+{txt}
+{com}.         g yhat3=yhat^3
+{txt}
+{com}.         g yhat4=yhat^4
+{txt}
+{com}.         xthtaylor lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85 yhat2 yhat3 yhat4, endog(comp_edu85 hrs_ann mar occ85) vce(r)
+
+{txt}Hausman–Taylor estimation{col 49}Number of obs{col 67}={col 69}{res}    15,910
+{txt}Group variable: {res}id{txt}{col 49}Number of groups{col 67}={col 69}{res}     1,591
+
+{txt}{col 49}Obs per group:
+{col 63}min{col 67}={col 69}{res}        10
+{txt}{col 63}avg{col 67}={col 69}{res}        10
+{txt}{col 63}max{col 67}={col 69}{res}        10
+
+{txt}Random effects u_i ~ {res}i.i.d.{txt}{col 49}Wald chi2({res}14{txt}){col 67}={col 69}{res}  37136.12
+{col 49}{txt}Prob > chi2{col 67}={res}{col 73}0.0000
+
+{txt}{ralign 78:(Std. err. adjusted for {res}1,591{txt} clusters in {res}id{txt})}
+{hline 13}{c TT}{hline 64}
+{res}{col 14}{text}{c |}{col 26}    Robust
+{res}      {txt}lnwage {c |}{col 16}Coefficient{col 29}std. err.{col 44}z{col 49}P>|z|{col 59}[95% conf. interval]
+{hline 13}{c +}{hline 64}
+{res}TVexogenous{txt}{col 14}{c |}
+       emp_1 {c |}{res}{col 17} .1078415{col 28} .0170066{col 39}   6.34{col 49}0.000{col 58} .0745091{col 70} .1411739
+         {txt}exp {c |}{res}{col 17} .0880194{col 28} .0044337{col 39}  19.85{col 49}0.000{col 58} .0793296{col 70} .0967092
+        {txt}exp2 {c |}{res}{col 17}-.0009174{col 28} .0000905{col 39} -10.14{col 49}0.000{col 58}-.0010948{col 70}-.0007401
+       {txt}yhat2 {c |}{res}{col 17} .0230525{col 28} .0049865{col 39}   4.62{col 49}0.000{col 58} .0132791{col 70} .0328258
+       {txt}yhat3 {c |}{res}{col 17}-.0043392{col 28} .0020947{col 39}  -2.07{col 49}0.038{col 58}-.0084447{col 70}-.0002337
+       {txt}yhat4 {c |}{res}{col 17} .0001735{col 28} .0001776{col 39}   0.98{col 49}0.329{col 58}-.0001746{col 70} .0005216
+TVendogenous{txt}{col 14}{c |}
+     hrs_ann {c |}{res}{col 17}-.0002298{col 28} .0000122{col 39} -18.85{col 49}0.000{col 58}-.0002537{col 70}-.0002059
+         {txt}mar {c |}{res}{col 17}-.0199233{col 28} .0142157{col 39}  -1.40{col 49}0.161{col 58}-.0477855{col 70} .0079389
+TIexogenous{txt}{col 14}{c |}
+         sex {c |}{res}{col 17} .4068011{col 28} .0374716{col 39}  10.86{col 49}0.000{col 58}  .333358{col 70} .4802441
+      {txt}race85 {c |}{res}{col 17}-.0140311{col 28} .0301641{col 39}  -0.47{col 49}0.642{col 58}-.0731517{col 70} .0450895
+    {txt}region85 {c |}{res}{col 17}-.0031378{col 28} .0103974{col 39}  -0.30{col 49}0.763{col 58}-.0235163{col 70} .0172407
+ {txt}union_cov85 {c |}{res}{col 17} .1775268{col 28} .0241364{col 39}   7.36{col 49}0.000{col 58} .1302204{col 70} .2248332
+TIendogenous{txt}{col 14}{c |}
+  comp_edu85 {c |}{res}{col 17} .2811501{col 28} .0148184{col 39}  18.97{col 49}0.000{col 58} .2521066{col 70} .3101937
+       {txt}occ85 {c |}{res}{col 17}-.0352879{col 28} .0399397{col 39}  -0.88{col 49}0.377{col 58}-.1135683{col 70} .0429926
+{txt}{col 14}{c |}
+       _cons {c |}{res}{col 17}-3.401562{col 28} .3186298{col 39} -10.68{col 49}0.000{col 58}-4.026065{col 70}-2.777059
+{txt}{hline 13}{c +}{hline 64}
+     sigma_u {c |} {res} .48416891
+{txt}     sigma_e {c |} {res} .26723523
+{txt}         rho {c |} {res} .76649222{txt}   (fraction of variance due to u_i)
+{hline 13}{c BT}{hline 64}
+Note: {res}TV{txt} refers to time varying; {res}TI{txt} refers to time invariant.
+{res}{txt}
+{com}.         * There appears to be some ommitted variable bias. This is strange since I am using a model nearly identical to published papers. 
+.         * I suspect this may be due to the method. Since it is reported that the HT81 model has some bias.      
+. 
+. *Heteroskedasticity test
+. 
+.         *no relationship
+.         scatter yhat idiosync_effect_error_ht, name(idio_hs_check) title(Predicted vales ~ Idiosyncratic Error)
+{res}{txt}
+{com}. 
+.         quietly reg yhat idiosync_effect_error_ht
+{txt}
+{com}.         estat hettest
+
+{txt}Breusch–Pagan/Cook–Weisberg test for heteroskedasticity 
+Assumption: Normal error terms
+{p 0 11 0}Variable:{space 1}{res:{txt:Fitted values of} {res:yhat}}{p_end}
+
+H0: Constant variance
+
+{ralign 11:chi2({res:1})} = {res}{ralign 6:0.03}
+{txt}{ralign 11:Prob > chi2} = {res}{ralign 6:0.8696}
+{txt}
+{com}. 
+. 
+. *Sargan-Hansen (not overidentified)
+. quietly xthtaylor lnwage comp_edu85 emp_1 hrs_ann sex mar exp exp2 race85 region85 occ85 union_cov85, endog(comp_edu85 hrs_ann mar occ85) vce(r)
+{txt}
+{com}. 
+. xtoverid, r
+
+{txt}Test of overidentifying restrictions: 
+Cross-section time-series model: xthtaylor htaylor  robust cluster(id)
+Sargan-Hansen statistic{res}{col 25}  0.249{txt}  Chi-sq({res}1{txt}){col 47}P-value = {res}0.6177
+{txt}
+{com}. 
+. 
+. *Weak instrument test (weakly identified)
+. xtoverid, r noi
+{res}
+{txt}First-stage regressions
+{hline 23}
+
+
+First-stage regression of __00000R:
+
+Statistics robust to heteroskedasticity and clustering on id
+Number of obs = {col 31}{res}   15910
+{txt}Number of clusters (id) = {col 33}{res}  1591
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}    __00000R{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}__00000H {c |}{col 14}{res}{space 2}-1042.725{col 26}{space 2} 103.1362{col 37}{space 1}  -10.11{col 46}{space 3}0.000{col 54}{space 4}-1244.883{col 67}{space 3}-840.5661
+{txt}{space 4}__00000K {c |}{col 14}{res}{space 2}-3.152644{col 26}{space 2}  8.63689{col 37}{space 1}   -0.37{col 46}{space 3}0.715{col 54}{space 4}-20.08193{col 67}{space 3} 13.77664
+{txt}{space 4}__00000N {c |}{col 14}{res}{space 2} .1401379{col 26}{space 2} .2011228{col 37}{space 1}    0.70{col 46}{space 3}0.486{col 54}{space 4}-.2540856{col 67}{space 3} .5343613
+{txt}{space 4}__00000Q {c |}{col 14}{res}{space 2}        1{col 26}{space 2} 9.79e-18{col 37}{space 1} 1.0e+17{col 46}{space 3}0.000{col 54}{space 4}        1{col 67}{space 3}        1
+{txt}{space 4}__00000T {c |}{col 14}{res}{space 2} 1.78e-15{col 26}{space 2} 5.09e-15{col 37}{space 1}    0.35{col 46}{space 3}0.727{col 54}{space 4}-8.20e-15{col 67}{space 3} 1.18e-14
+{txt}{space 4}__00000I {c |}{col 14}{res}{space 2} 1042.725{col 26}{space 2} 103.1362{col 37}{space 1}   10.11{col 46}{space 3}0.000{col 54}{space 4} 840.5661{col 67}{space 3} 1244.883
+{txt}{space 4}__00000L {c |}{col 14}{res}{space 2} 3.152644{col 26}{space 2}  8.63689{col 37}{space 1}    0.37{col 46}{space 3}0.715{col 54}{space 4}-13.77664{col 67}{space 3} 20.08193
+{txt}{space 4}__00000O {c |}{col 14}{res}{space 2}-.1401379{col 26}{space 2} .2011228{col 37}{space 1}   -0.70{col 46}{space 3}0.486{col 54}{space 4}-.5343613{col 67}{space 3} .2540856
+{txt}{space 4}__00000V {c |}{col 14}{res}{space 2} 276.6812{col 26}{space 2} 20.91258{col 37}{space 1}   13.23{col 46}{space 3}0.000{col 54}{space 4} 235.6902{col 67}{space 3} 317.6722
+{txt}{space 4}__00000W {c |}{col 14}{res}{space 2}-69.08002{col 26}{space 2} 17.36281{col 37}{space 1}   -3.98{col 46}{space 3}0.000{col 54}{space 4}-103.1131{col 67}{space 3}-35.04694
+{txt}{space 4}__00000X {c |}{col 14}{res}{space 2}-17.86692{col 26}{space 2} 6.386265{col 37}{space 1}   -2.80{col 46}{space 3}0.005{col 54}{space 4}-30.38472{col 67}{space 3}-5.349113
+{txt}{space 4}__00000Y {c |}{col 14}{res}{space 2}-115.0246{col 26}{space 2} 16.35943{col 37}{space 1}   -7.03{col 46}{space 3}0.000{col 54}{space 4}-147.0909{col 67}{space 3}-82.95826
+{txt}{space 4}__00000D {c |}{col 14}{res}{space 2}-5.052809{col 26}{space 2} 219.2252{col 37}{space 1}   -0.02{col 46}{space 3}0.982{col 54}{space 4} -434.759{col 67}{space 3} 424.6534
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+F test of excluded instruments:
+  F(  5,  1590) = {res}       .
+{txt}  Prob > F      = {res}       .
+{help ivreg2##swstats:Sanderson-Windmeijer multivariate F test of excluded instruments:}
+{txt}  F(  2,  1590) = {res}       .
+{txt}  Prob > F      = {res}       .
+
+
+{txt}First-stage regression of __00000U:
+
+Statistics robust to heteroskedasticity and clustering on id
+Number of obs = {col 31}{res}   15910
+{txt}Number of clusters (id) = {col 33}{res}  1591
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}    __00000U{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}__00000H {c |}{col 14}{res}{space 2} .1483421{col 26}{space 2} .0851135{col 37}{space 1}    1.74{col 46}{space 3}0.081{col 54}{space 4}-.0184901{col 67}{space 3} .3151743
+{txt}{space 4}__00000K {c |}{col 14}{res}{space 2} .0157384{col 26}{space 2} .0056216{col 37}{space 1}    2.80{col 46}{space 3}0.005{col 54}{space 4} .0047195{col 67}{space 3} .0267573
+{txt}{space 4}__00000N {c |}{col 14}{res}{space 2}-.0003189{col 26}{space 2} .0001219{col 37}{space 1}   -2.62{col 46}{space 3}0.009{col 54}{space 4}-.0005579{col 67}{space 3}-.0000799
+{txt}{space 4}__00000Q {c |}{col 14}{res}{space 2}-2.71e-22{col 26}{space 2} 1.06e-21{col 37}{space 1}   -0.26{col 46}{space 3}0.798{col 54}{space 4}-2.35e-21{col 67}{space 3} 1.81e-21
+{txt}{space 4}__00000T {c |}{col 14}{res}{space 2}        1{col 26}{space 2} 9.73e-18{col 37}{space 1} 1.0e+17{col 46}{space 3}0.000{col 54}{space 4}        1{col 67}{space 3}        1
+{txt}{space 4}__00000I {c |}{col 14}{res}{space 2}-.1483421{col 26}{space 2} .0851135{col 37}{space 1}   -1.74{col 46}{space 3}0.081{col 54}{space 4}-.3151743{col 67}{space 3} .0184901
+{txt}{space 4}__00000L {c |}{col 14}{res}{space 2}-.0157384{col 26}{space 2} .0056216{col 37}{space 1}   -2.80{col 46}{space 3}0.005{col 54}{space 4}-.0267573{col 67}{space 3}-.0047195
+{txt}{space 4}__00000O {c |}{col 14}{res}{space 2} .0003189{col 26}{space 2} .0001219{col 37}{space 1}    2.62{col 46}{space 3}0.009{col 54}{space 4} .0000799{col 67}{space 3} .0005579
+{txt}{space 4}__00000V {c |}{col 14}{res}{space 2}-.7408744{col 26}{space 2} .0152056{col 37}{space 1}  -48.72{col 46}{space 3}0.000{col 54}{space 4}-.7706792{col 67}{space 3}-.7110697
+{txt}{space 4}__00000W {c |}{col 14}{res}{space 2}  .035873{col 26}{space 2} .0113799{col 37}{space 1}    3.15{col 46}{space 3}0.002{col 54}{space 4} .0135671{col 67}{space 3}  .058179
+{txt}{space 4}__00000X {c |}{col 14}{res}{space 2} .0002334{col 26}{space 2} .0042318{col 37}{space 1}    0.06{col 46}{space 3}0.956{col 54}{space 4}-.0080614{col 67}{space 3} .0085282
+{txt}{space 4}__00000Y {c |}{col 14}{res}{space 2}-.0028662{col 26}{space 2} .0104707{col 37}{space 1}   -0.27{col 46}{space 3}0.784{col 54}{space 4}-.0233901{col 67}{space 3} .0176576
+{txt}{space 4}__00000D {c |}{col 14}{res}{space 2}  3.01894{col 26}{space 2} .1807522{col 37}{space 1}   16.70{col 46}{space 3}0.000{col 54}{space 4} 2.664645{col 67}{space 3} 3.373235
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+F test of excluded instruments:
+  F(  5,  1590) = {res}       .
+{txt}  Prob > F      = {res}       .
+{help ivreg2##swstats:Sanderson-Windmeijer multivariate F test of excluded instruments:}
+{txt}  F(  2,  1590) = {res}       .
+{txt}  Prob > F      = {res}       .
+
+
+{txt}First-stage regression of __00000Z:
+
+Statistics robust to heteroskedasticity and clustering on id
+Number of obs = {col 31}{res}   15910
+{txt}Number of clusters (id) = {col 33}{res}  1591
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}    __00000Z{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}__00000H {c |}{col 14}{res}{space 2}-3.458896{col 26}{space 2} .5627375{col 37}{space 1}   -6.15{col 46}{space 3}0.000{col 54}{space 4}-4.561925{col 67}{space 3}-2.355866
+{txt}{space 4}__00000K {c |}{col 14}{res}{space 2}-.0218556{col 26}{space 2} .0475459{col 37}{space 1}   -0.46{col 46}{space 3}0.646{col 54}{space 4}-.1150509{col 67}{space 3} .0713396
+{txt}{space 4}__00000N {c |}{col 14}{res}{space 2} .0041454{col 26}{space 2}  .001085{col 37}{space 1}    3.82{col 46}{space 3}0.000{col 54}{space 4} .0020187{col 67}{space 3}  .006272
+{txt}{space 4}__00000Q {c |}{col 14}{res}{space 2} 5.30e-21{col 26}{space 2} 3.91e-21{col 37}{space 1}    1.36{col 46}{space 3}0.175{col 54}{space 4}-2.36e-21{col 67}{space 3} 1.30e-20
+{txt}{space 4}__00000T {c |}{col 14}{res}{space 2} 7.14e-18{col 26}{space 2} 9.99e-18{col 37}{space 1}    0.72{col 46}{space 3}0.475{col 54}{space 4}-1.24e-17{col 67}{space 3} 2.67e-17
+{txt}{space 4}__00000I {c |}{col 14}{res}{space 2} 3.458896{col 26}{space 2} .5627375{col 37}{space 1}    6.15{col 46}{space 3}0.000{col 54}{space 4} 2.355866{col 67}{space 3} 4.561925
+{txt}{space 4}__00000L {c |}{col 14}{res}{space 2} .0218556{col 26}{space 2} .0475459{col 37}{space 1}    0.46{col 46}{space 3}0.646{col 54}{space 4}-.0713396{col 67}{space 3} .1150509
+{txt}{space 4}__00000O {c |}{col 14}{res}{space 2}-.0041454{col 26}{space 2}  .001085{col 37}{space 1}   -3.82{col 46}{space 3}0.000{col 54}{space 4} -.006272{col 67}{space 3}-.0020187
+{txt}{space 4}__00000V {c |}{col 14}{res}{space 2}-.2483589{col 26}{space 2}  .131904{col 37}{space 1}   -1.88{col 46}{space 3}0.060{col 54}{space 4}-.5069057{col 67}{space 3}  .010188
+{txt}{space 4}__00000W {c |}{col 14}{res}{space 2}-.7065197{col 26}{space 2} .1244463{col 37}{space 1}   -5.68{col 46}{space 3}0.000{col 54}{space 4}-.9504486{col 67}{space 3}-.4625907
+{txt}{space 4}__00000X {c |}{col 14}{res}{space 2} .1943009{col 26}{space 2} .0392948{col 37}{space 1}    4.94{col 46}{space 3}0.000{col 54}{space 4} .1172787{col 67}{space 3} .2713231
+{txt}{space 4}__00000Y {c |}{col 14}{res}{space 2}-.3853597{col 26}{space 2} .0875414{col 37}{space 1}   -4.40{col 46}{space 3}0.000{col 54}{space 4}-.5569508{col 67}{space 3}-.2137687
+{txt}{space 4}__00000D {c |}{col 14}{res}{space 2} 9.662784{col 26}{space 2} 1.249225{col 37}{space 1}    7.74{col 46}{space 3}0.000{col 54}{space 4} 7.214162{col 67}{space 3} 12.11141
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+F test of excluded instruments:
+  F(  5,  1590) = {res}       .
+{txt}  Prob > F      = {res}       .
+{help ivreg2##swstats:Sanderson-Windmeijer multivariate F test of excluded instruments:}
+{txt}  F(  2,  1590) = {res}       .
+{txt}  Prob > F      = {res}       .
+
+
+{txt}First-stage regression of __000010:
+
+Statistics robust to heteroskedasticity and clustering on id
+Number of obs = {col 31}{res}   15910
+{txt}Number of clusters (id) = {col 33}{res}  1591
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}    __000010{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}__00000H {c |}{col 14}{res}{space 2} .0999163{col 26}{space 2} .6327284{col 37}{space 1}    0.16{col 46}{space 3}0.875{col 54}{space 4}-1.140303{col 67}{space 3} 1.340136
+{txt}{space 4}__00000K {c |}{col 14}{res}{space 2}  .038298{col 26}{space 2}  .049434{col 37}{space 1}    0.77{col 46}{space 3}0.439{col 54}{space 4}-.0585981{col 67}{space 3} .1351942
+{txt}{space 4}__00000N {c |}{col 14}{res}{space 2}-.0007683{col 26}{space 2}  .001136{col 37}{space 1}   -0.68{col 46}{space 3}0.499{col 54}{space 4} -.002995{col 67}{space 3} .0014585
+{txt}{space 4}__00000Q {c |}{col 14}{res}{space 2} 7.78e-22{col 26}{space 2} 1.85e-21{col 37}{space 1}    0.42{col 46}{space 3}0.674{col 54}{space 4}-2.84e-21{col 67}{space 3} 4.40e-21
+{txt}{space 4}__00000T {c |}{col 14}{res}{space 2}-6.88e-19{col 26}{space 2} 7.87e-18{col 37}{space 1}   -0.09{col 46}{space 3}0.930{col 54}{space 4}-1.61e-17{col 67}{space 3} 1.47e-17
+{txt}{space 4}__00000I {c |}{col 14}{res}{space 2}-.0999163{col 26}{space 2} .6327284{col 37}{space 1}   -0.16{col 46}{space 3}0.875{col 54}{space 4}-1.340136{col 67}{space 3} 1.140303
+{txt}{space 4}__00000L {c |}{col 14}{res}{space 2} -.038298{col 26}{space 2}  .049434{col 37}{space 1}   -0.77{col 46}{space 3}0.439{col 54}{space 4}-.1351942{col 67}{space 3} .0585981
+{txt}{space 4}__00000O {c |}{col 14}{res}{space 2} .0007683{col 26}{space 2}  .001136{col 37}{space 1}    0.68{col 46}{space 3}0.499{col 54}{space 4}-.0014585{col 67}{space 3}  .002995
+{txt}{space 4}__00000V {c |}{col 14}{res}{space 2} .5713583{col 26}{space 2} .1127744{col 37}{space 1}    5.07{col 46}{space 3}0.000{col 54}{space 4} .3503077{col 67}{space 3} .7924089
+{txt}{space 4}__00000W {c |}{col 14}{res}{space 2} .0040077{col 26}{space 2} .0931899{col 37}{space 1}    0.04{col 46}{space 3}0.966{col 54}{space 4}-.1786552{col 67}{space 3} .1866705
+{txt}{space 4}__00000X {c |}{col 14}{res}{space 2} .0259693{col 26}{space 2} .0379105{col 37}{space 1}    0.69{col 46}{space 3}0.493{col 54}{space 4}-.0483396{col 67}{space 3} .1002782
+{txt}{space 4}__00000Y {c |}{col 14}{res}{space 2} .0219823{col 26}{space 2}  .092045{col 37}{space 1}    0.24{col 46}{space 3}0.811{col 54}{space 4}-.1584363{col 67}{space 3} .2024008
+{txt}{space 4}__00000D {c |}{col 14}{res}{space 2} 3.668728{col 26}{space 2} 1.300846{col 37}{space 1}    2.82{col 46}{space 3}0.005{col 54}{space 4} 1.118922{col 67}{space 3} 6.218533
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+F test of excluded instruments:
+  F(  5,  1590) = {res}       .
+{txt}  Prob > F      = {res}       .
+{help ivreg2##swstats:Sanderson-Windmeijer multivariate F test of excluded instruments:}
+{txt}  F(  2,  1590) = {res}       .
+{txt}  Prob > F      = {res}       .
+
+
+
+{txt}Summary results for first-stage regressions
+{hline 43}
+
+{col 44}{help ivreg2##swstats:(Underid)}{col 65}{help ivreg2##swstats:(Weak id)}
+Variable     |{col 16}{help ivreg2##swstats:F}({res}{col 17}  5{txt},{res}  1590{txt})  P-val{col 37}|{col 39}{help ivreg2##swstats:SW Chi-sq}({res}  2{txt}) P-val{col 60}|{col 62}{help ivreg2##swstats:SW F}({res}{col 67}  2{txt},{res}  1590{txt})
+{res}__00000R    {col 14}{txt}|{col 18}{res}       .{col 28}       .{col 37}{txt}|{col 42}{res}       .{col 51}       .{col 60}{txt}|{col 65}{res}       .
+__00000U    {col 14}{txt}|{col 18}{res}       .{col 28}       .{col 37}{txt}|{col 42}{res}       .{col 51}       .{col 60}{txt}|{col 65}{res}       .
+__00000Z    {col 14}{txt}|{col 18}{res}       .{col 28}       .{col 37}{txt}|{col 42}{res}       .{col 51}       .{col 60}{txt}|{col 65}{res}       .
+__000010    {col 14}{txt}|{col 18}{res}       .{col 28}       .{col 37}{txt}|{col 42}{res}       .{col 51}       .{col 60}{txt}|{col 65}{res}       .
+
+{txt}NB: first-stage test statistics cluster-robust
+
+Stock-Yogo weak ID F test critical values for single endogenous regressor:
+{res}{txt}{col 36} 5% maximal IV relative bias{res}{col 67} 18.37
+{txt}{col 36}10% maximal IV relative bias{res}{col 67} 10.83
+{txt}{col 36}20% maximal IV relative bias{res}{col 67}  6.77
+{txt}{col 36}30% maximal IV relative bias{res}{col 67}  5.25
+{txt}{col 36}10% maximal IV size{res}{col 67} 26.87
+{txt}{col 36}15% maximal IV size{res}{col 67} 15.09
+{txt}{col 36}20% maximal IV size{res}{col 67} 10.98
+{txt}{col 36}25% maximal IV size{res}{col 67}  8.84
+{txt}Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for i.i.d. errors only.
+
+{help ivreg2##idtest:Underidentification test}
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+{res}Kleibergen-Paap rk LM statistic{txt}{col 42}Chi-sq({res}2{txt})={res}0.74   {col 61}{txt}P-val={res}0.6904
+
+{help ivreg2##widtest:Weak identification test}
+{txt}Ho: equation is weakly identified
+{res}Cragg-Donald Wald F statistic{col 65}    1.41
+Kleibergen-Paap Wald rk F statistic{col 65}    0.15
+
+{txt}Stock-Yogo weak ID test critical values for K1=4 and L1=5:
+{res}{txt}{col 64}<not available>
+
+{help ivreg2##wirobust:Weak-instrument-robust inference}
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+{res}Anderson-Rubin Wald test{txt}{col 36}F({res}5{txt},{res}1590{txt})={col 49}{res} 211.54{col 61}{txt}P-val={res}0.0000
+Anderson-Rubin Wald test{txt}{col 36}Chi-sq({res}5{txt})={col 49}{res}1059.14{col 61}{txt}P-val={res}0.0000
+Stock-Wright LM S statistic{txt}{col 36}Chi-sq({res}5{txt})={col 49}{res} 533.58{col 61}{txt}P-val={res}0.0000
+
+{txt}NB: Underidentification, weak identification and weak-identification-robust
+    test statistics cluster-robust
+
+Number of clusters             N_clust  = {res}      1591
+{txt}Number of observations               N  = {res}     15910
+{txt}Number of regressors                 K  = {res}        12
+{txt}Number of endogenous regressors      K1 = {res}         4
+{txt}Number of instruments                L  = {res}        13
+{txt}Number of excluded instruments       L1 = {res}         5
+
+{txt}IV (2SLS) estimation
+{hline 20}
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity and clustering on id
+
+Number of clusters (id) = {col 33}{res}  1591{txt}{col 55}Number of obs = {res}   15910
+{txt}{col 55}F( 12,  1590) = {res}  327.78
+{txt}{col 55}Prob > F      = {res}  0.0000
+{txt}Total (centered) SS     = {res} 1472.314074{txt}{col 55}Centered R2   = {res}  0.2462
+{txt}Total (uncentered) SS   = {res} 1537.559983{txt}{col 55}Uncentered R2 = {res}  0.2782
+{txt}Residual SS             = {res} 1109.822931{txt}{col 55}Root MSE      = {res}   .2642
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}    __00000E{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}__00000R {c |}{col 14}{res}{space 2}-.0002265{col 26}{space 2} .0000105{col 37}{space 1}  -21.64{col 46}{space 3}0.000{col 54}{space 4} -.000247{col 67}{space 3}-.0002059
+{txt}{space 4}__00000U {c |}{col 14}{res}{space 2}-.0201234{col 26}{space 2} .0141379{col 37}{space 1}   -1.42{col 46}{space 3}0.155{col 54}{space 4}-.0478543{col 67}{space 3} .0076075
+{txt}{space 4}__00000Z {c |}{col 14}{res}{space 2} .2968609{col 26}{space 2} .0798033{col 37}{space 1}    3.72{col 46}{space 3}0.000{col 54}{space 4} .1403302{col 67}{space 3} .4533917
+{txt}{space 4}__000010 {c |}{col 14}{res}{space 2}  1.30578{col 26}{space 2} 1.579038{col 37}{space 1}    0.83{col 46}{space 3}0.408{col 54}{space 4}-1.791435{col 67}{space 3} 4.402995
+{txt}{space 4}__00000I {c |}{col 14}{res}{space 2} .1023596{col 26}{space 2} .0164169{col 37}{space 1}    6.24{col 46}{space 3}0.000{col 54}{space 4} .0701585{col 67}{space 3} .1345606
+{txt}{space 4}__00000L {c |}{col 14}{res}{space 2}  .089844{col 26}{space 2} .0037888{col 37}{space 1}   23.71{col 46}{space 3}0.000{col 54}{space 4} .0824123{col 67}{space 3} .0972756
+{txt}{space 4}__00000O {c |}{col 14}{res}{space 2}-.0009517{col 26}{space 2} .0000902{col 37}{space 1}  -10.55{col 46}{space 3}0.000{col 54}{space 4}-.0011285{col 67}{space 3}-.0007748
+{txt}{space 4}__00000V {c |}{col 14}{res}{space 2}-.3466268{col 26}{space 2} .9198946{col 37}{space 1}   -0.38{col 46}{space 3}0.706{col 54}{space 4} -2.15096{col 67}{space 3} 1.457707
+{txt}{space 4}__00000W {c |}{col 14}{res}{space 2} .0138005{col 26}{space 2} .1466998{col 37}{space 1}    0.09{col 46}{space 3}0.925{col 54}{space 4}-.2739448{col 67}{space 3} .3015459
+{txt}{space 4}__00000X {c |}{col 14}{res}{space 2}-.0464962{col 26}{space 2} .0623899{col 37}{space 1}   -0.75{col 46}{space 3}0.456{col 54}{space 4}-.1688713{col 67}{space 3} .0758788
+{txt}{space 4}__00000Y {c |}{col 14}{res}{space 2}  .160817{col 26}{space 2}  .129776{col 37}{space 1}    1.24{col 46}{space 3}0.215{col 54}{space 4}-.0937332{col 67}{space 3} .4153671
+{txt}{space 4}__00000D {c |}{col 14}{res}{space 2}  -7.6992{col 26}{space 2} 4.429133{col 37}{space 1}   -1.74{col 46}{space 3}0.082{col 54}{space 4}-16.38675{col 67}{space 3} .9883548
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{help ivreg2##idtest:Underidentification test} (Kleibergen-Paap rk LM statistic):{res}{col 71}   0.741
+{txt}{col 52}Chi-sq({res}2{txt}) P-val =  {res}{col 73}0.6904
+{txt}{hline 78}
+{help ivreg2##widtest:Weak identification test} (Cragg-Donald Wald F statistic):{res}{col 71}   1.408
+{txt}                         (Kleibergen-Paap rk Wald F statistic):{res}{col 71}   0.148
+{txt}Stock-Yogo weak ID test critical values:{res}{txt}{col 64}<not available>
+{hline 78}
+{help ivreg2##overidtests:Hansen J statistic} (overidentification test of all instruments):{res}{col 71}   0.249
+{txt}{col 52}Chi-sq({res}1{txt}) P-val =  {res}{col 73}0.6177
+{txt}{hline 78}
+Instrumented:{col 23}__00000R __00000U __00000Z __000010
+Included instruments:{col 23}__00000I __00000L __00000O __00000V __00000W __00000X
+{col 23}__00000Y __00000D
+Excluded instruments:{col 23}__00000H __00000K __00000N __00000Q __00000T
+{hline 78}
+
+Test of overidentifying restrictions: 
+Cross-section time-series model: xthtaylor htaylor  robust cluster(id)
+Sargan-Hansen statistic{res}{col 25}  0.249{txt}  Chi-sq({res}1{txt}){col 47}P-value = {res}0.6177
+{txt}
+{com}. 
+. 
+. *relationship with ability error term
+. 
+. scatter ind_effect_error_am lnwage || lfit ind_effect_error_am lnwage ,name(ind_effects_wage) title(Individual Effect ~ ln(Wage))
+{res}{txt}
+{com}. 
+. 
+. *strong negative correlation
+. scatter ind_effect_error_am yhat || lfit ind_effect_error_am yhat ,name(ind_effects_yhat) title(Individual Effect ~ Predicted Values)
+{res}{txt}
+{com}. 
+. 
+. 
+. 
+. *close log session
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/Users/masonveilleux/Dropbox/Emetrics_Project/psid_code_data/log_emtrics_project.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}20 Jan 2022, 11:42:07
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
